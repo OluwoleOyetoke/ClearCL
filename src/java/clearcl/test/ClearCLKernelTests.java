@@ -69,7 +69,6 @@ public class ClearCLKernelTests
   {
     try (ClearCL lClearCL = new ClearCL(pClearCLBackendInterface))
     {
-
       ClearCLDevice lClearClDevice =
                                    lClearCL.getBestDevice(DeviceTypeSelector.GPU,
                                                           BadDeviceSelector.NotIntegratedIntel,

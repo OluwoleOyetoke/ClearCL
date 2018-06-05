@@ -16,7 +16,7 @@ apply plugin: 'maven'
 apply plugin: 'maven-publish'
 apply plugin: 'idea'
 apply plugin: 'com.diffplug.gradle.spotless'
-apply plugin: 'findbugs'
+//apply plugin: 'findbugs'
 
 
 //***********************************************************************************
@@ -177,16 +177,18 @@ spotless {
 
 //***********************************************************************************
 // FINDBUGS:
-
+/*
 tasks.withType(FindBugs) {
     reports {
         xml.enabled false
         html.enabled true
     }
 }
+*/
 
-
-
+if (!hasProperty('mainClass')) {
+    ext.mainClass = 'clearcl.interview.Runner'
+}
 
 
 

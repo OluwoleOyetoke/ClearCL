@@ -372,7 +372,7 @@ public class ClearCLProgram extends ClearCLBase
   /**
    * Returns the complete concatenated source code with includes and defines
    * added.
-   * 
+   * TOD: preamble insertion temporarily disabled
    * @return source code
    * @throws IOException
    *           thrown if the includes cannot be resolved
@@ -387,7 +387,7 @@ public class ClearCLProgram extends ClearCLBase
                                              insertIncludes(lSourceCodeWithDefines);
     String lSourceCodeWithPreamble =
                                    insertPreamble(lSourceCodeWithDefinesAndIncludes);
-    return lSourceCodeWithPreamble;
+    return lConcatenatedSourceCode; //lSourceCodeWithPreamble;
   }
 
   private String insertPreamble(String pSourceCode) throws IOException
