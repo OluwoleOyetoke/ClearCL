@@ -59,7 +59,7 @@ public class ViewImageDemos
       ClearCLImage lImage =
                           lContext.createSingleChannelImage(ImageChannelDataType.Float,
                                                             512,
-                                                            512);
+                                                            512,512);
 
       ClearCLKernel lKernel = lProgram.createKernel("fillimagexor");
       lKernel.setArgument("image", lImage);
@@ -75,6 +75,7 @@ public class ViewImageDemos
           System.out.println("i=" + i);
         lKernel.setArgument("u", 100.0f / i);
         lKernel.setArgument("dx", i);
+        lKernel.setArgument("dy", i);
 
         lKernel.run(true);
         lImage.notifyListenersOfChange(lContext.getDefaultQueue());

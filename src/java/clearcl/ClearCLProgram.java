@@ -387,7 +387,7 @@ public class ClearCLProgram extends ClearCLBase
                                              insertIncludes(lSourceCodeWithDefines);
     String lSourceCodeWithPreamble =
                                    insertPreamble(lSourceCodeWithDefinesAndIncludes);
-    return lConcatenatedSourceCode; //lSourceCodeWithPreamble;
+    return lSourceCodeWithPreamble;
   }
 
   private String insertPreamble(String pSourceCode) throws IOException

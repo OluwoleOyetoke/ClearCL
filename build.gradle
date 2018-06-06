@@ -16,7 +16,7 @@ apply plugin: 'maven'
 apply plugin: 'maven-publish'
 apply plugin: 'idea'
 apply plugin: 'com.diffplug.gradle.spotless'
-//apply plugin: 'findbugs'
+apply plugin: 'findbugs'
 
 
 //***********************************************************************************
@@ -72,7 +72,7 @@ dependencies
 	compile ('org.jocl:jocl:2.0.0') {transitive= true; changing= false}
 	
 	// Vecmath:
-    compile ('javax.vecmath:vecmath:1.5.2')
+        compile ('javax.vecmath:vecmath:1.5.2')
 
 	// Bioformats
 	compile(group: 'ome', name: 'bio-formats-tools', version: '5.5.3')
@@ -164,7 +164,6 @@ apply from: 'gradle/install-git-hooks.gradle'
 
 spotless {
     java {
-        //licenseHeader '/* Licensed under Apache-2.0 */' // License header
  
         importOrder(['java', 'javax', 'com', 'org'])
 
@@ -177,14 +176,14 @@ spotless {
 
 //***********************************************************************************
 // FINDBUGS:
-/*
+
 tasks.withType(FindBugs) {
     reports {
         xml.enabled false
         html.enabled true
     }
 }
-*/
+
 
 if (!hasProperty('mainClass')) {
     ext.mainClass = 'clearcl.interview.Runner'
