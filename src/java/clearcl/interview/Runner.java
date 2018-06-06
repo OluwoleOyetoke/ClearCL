@@ -20,6 +20,7 @@ import clearcl.enums.ImageChannelDataType;
 import clearcl.enums.ImageChannelOrder;
 import clearcl.enums.KernelAccessType;
 import clearcl.test.ClearCLBasicTests;
+import clearcl.viewer.demo.ViewImageDemos;
 import coremem.enums.NativeTypeEnum;
 import coremem.offheap.OffHeapMemory;
 import static org.junit.Assert.assertEquals;
@@ -76,7 +77,8 @@ public class Runner {
         Painter painter = new Painter(128, 128, 128);
         //Painter painter = new Painter(3, 3, 3);
         painter.paint();
-      
+        //ViewImageDemos demo = new ViewImageDemos();
+        //demo.demoViewImage2DF();
 
         System.out.println("Main Now run");
     }

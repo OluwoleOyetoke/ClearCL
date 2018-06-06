@@ -22,6 +22,7 @@ import clearcl.enums.KernelAccessType;
 import clearcl.exceptions.ClearCLException;
 import clearcl.interview.ClearCLBioImage;
 import clearcl.io.TiffWriter;
+import clearcl.viewer.ClearCLImageViewer;
 import coremem.enums.NativeTypeEnum;
 import coremem.offheap.OffHeapMemory;
 import java.awt.image.BufferedImage;
@@ -57,7 +58,7 @@ public class Painter {
             for (int j = 0; j < maxY; j++) {
                 for (int k = 0; k < maxZ; k++) {
                     img.paint(i, j, k);
-                    
+
                 }
             }
         }
@@ -100,11 +101,11 @@ public class Painter {
 
             final ClearCLProgram lProgram = lContext.createProgram(this.getClass(), "img_edit.cl");
 
-            //build program
+            //Build program
             final BuildStatus lBuildStatus = lProgram.buildAndLog();
             System.out.println("Kernel Build Status: " + lBuildStatus);
 
-            //Hyperboloid Kernel
+            //Extract hyperboloid painter kernel
             final ClearCLKernel lKernel = lProgram.createKernel("painter");
 
             lKernel.setArgument("image", lImageSrc);
@@ -121,34 +122,74 @@ public class Painter {
             System.out.println("Global Size: " + Arrays.toString(lKernel.getGlobalSizes()));
             System.out.println("Local Size: " + Arrays.toString(lKernel.getLocalSizes()));
             lKernel.run();
-           
-    final ClearCLImage lImageDst =lContext.createImage(HostAccessType.ReadOnly,
-                                                      KernelAccessType.WriteOnly,
-                                                      ImageChannelOrder.Intensity,
-                                                      ImageChannelDataType.Float,
-                                                      maxX,
-                                                      maxY,
-                                                      maxZ);
-    
-    //Copy image from device into host memory
-    lImageSrc.copyTo(lImageDst,true);
-    
-    //write to TIFF
-    TiffWriter lTiffWriter = new TiffWriter(NativeTypeEnum.Byte,1f, 0f);
-    File lFile8 = File.createTempFile(this.getClass().getSimpleName(), "Hyperboloid8");
-    File lFile16 =File.createTempFile(this.getClass().getSimpleName(), "Hyperboloid16");
-    File lFile32 = File.createTempFile(this.getClass().getSimpleName(),"Hyperboloid32");
-    lFile8.deleteOnExit();
-    lFile16.deleteOnExit();
-    lFile32.deleteOnExit();
 
-    lTiffWriter.setOverwrite(true);
-    lTiffWriter.setBytesPerPixel(8);
-    lTiffWriter.write(lImageDst, lFile8);
-    lTiffWriter.setBytesPerPixel(16);
-    lTiffWriter.write(lImageDst, lFile16);
-    lTiffWriter.setBytesPerPixel(32);
-    lTiffWriter.write(lImageDst, lFile32);   
+            final ClearCLImage lImageDst = lContext.createImage(HostAccessType.ReadOnly,
+                    KernelAccessType.WriteOnly,
+                    ImageChannelOrder.Intensity,
+                    ImageChannelDataType.Float,
+                    maxX,
+                    maxY,
+                    maxZ);
+
+            //Copy image from device into host memory
+            lImageSrc.copyTo(lImageDst, true);
+
+            //Display on screen
+            ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImageDst);
+
+            //write to TIFF
+            TiffWriter lTiffWriter = new TiffWriter(NativeTypeEnum.Byte, 1f, 0f);
+            File lFile8 = File.createTempFile(this.getClass().getSimpleName(), "Hyperboloid8");
+            File lFile16 = File.createTempFile(this.getClass().getSimpleName(), "Hyperboloid16");
+            File lFile32 = File.createTempFile(this.getClass().getSimpleName(), "Hyperboloid32");
+            lFile8.deleteOnExit();
+            lFile16.deleteOnExit();
+            lFile32.deleteOnExit();
+
+            lTiffWriter.setOverwrite(true);
+            lTiffWriter.setBytesPerPixel(8);
+            lTiffWriter.write(lImageDst, lFile8);
+            lTiffWriter.setBytesPerPixel(16);
+            lTiffWriter.write(lImageDst, lFile16);
+            lTiffWriter.setBytesPerPixel(32);
+            lTiffWriter.write(lImageDst, lFile32);
         }
+    }
+
+    /**
+     * Filters and displays the image using a (3,3,3) box filter
+     *
+     * @param lImageSrc image to filter
+     * @param lContext context to use
+     */
+    void filter(ClearCLImage lImageSrc, ClearCLContext lContext, int MAX_WORK_GROUP_SIZE) throws Exception {
+        if (lImageSrc == null || lContext == null) {
+            throw new ClearCLException("Empy image or context received by box filter function");
+        }
+
+        //Create program
+        final ClearCLProgram lProgram = lContext.createProgram(this.getClass(), "img_edit.cl");
+
+        //Build program
+        final BuildStatus lBuildStatus = lProgram.buildAndLog();
+        System.out.println("Kernel Build Status: " + lBuildStatus);
+
+        //Extract box filter kernel
+        final ClearCLKernel lKernel = lProgram.createKernel("box_filter");
+
+        lKernel.setArgument("image", lImageSrc);
+        lKernel.setArgument("oneD", maxX);
+        lKernel.setArgument("twoD", maxX * maxY);
+        lKernel.setGlobalSizes(maxX, maxY, maxZ); //set global size to the dimension of the image
+        //Check feasible local dimension
+        int neededWorkGroupSize = 3 * 3 * maxZ;
+        if (neededWorkGroupSize < MAX_WORK_GROUP_SIZE) {
+            System.out.println("Maximum work group size allowed by your device"
+                    + " not sufficient enough to perform 3x3x" + maxZ + " convolution in one swoop"
+                    + "Please use your device maxg work group size value to adjust function appropriately");
+            return;
+        }
+        lKernel.setLocalSizes(3, 3);
+        lKernel.run();
     }
 }
